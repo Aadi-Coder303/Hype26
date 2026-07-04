@@ -73,12 +73,15 @@ export default async function ProductsPage({
 
   const productNodes = productsData?.data?.products?.edges?.map((e: any) => e.node) || [];
   let products = productNodes.map((node: any) => ({
-    id: node.id,
+    id: node.handle,
     name: node.title,
     brand: node.vendor,
     price: parseFloat(node.priceRange.minVariantPrice.amount),
     imageUrl: node.images?.edges?.[0]?.node?.url || '',
-    sizes: {} // Sizes can be mapped from variants if needed
+    sizes: node.variants?.edges?.reduce((acc: any, edge: any) => {
+      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      return acc;
+    }, {}) || {}
   }));
 
   const totalCount = products.length;

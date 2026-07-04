@@ -17,12 +17,15 @@ export default async function Home() {
   });
   const topPicksNodes = topPicksData?.data?.products?.edges?.map((e: any) => e.node) || [];
   const topPicks = topPicksNodes.map((node: any) => ({
-    id: node.id,
+    id: node.handle,
     name: node.title,
     brand: node.vendor,
     price: parseFloat(node.priceRange.minVariantPrice.amount),
     imageUrl: node.images?.edges?.[0]?.node?.url || '',
-    sizes: {} 
+    sizes: node.variants?.edges?.reduce((acc: any, edge: any) => {
+      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      return acc;
+    }, {}) || {}
   }));
 
   // Fetch products for lookbook
@@ -32,11 +35,15 @@ export default async function Home() {
   });
   const lookbookNodes = lookbookData?.data?.products?.edges?.map((e: any) => e.node) || [];
   const lookbookProducts = lookbookNodes.map((node: any) => ({
-    id: node.id,
+    id: node.handle,
     name: node.title,
     brand: node.vendor,
     price: parseFloat(node.priceRange.minVariantPrice.amount),
-    imageUrl: node.images?.edges?.[0]?.node?.url || ''
+    imageUrl: node.images?.edges?.[0]?.node?.url || '',
+    sizes: node.variants?.edges?.reduce((acc: any, edge: any) => {
+      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      return acc;
+    }, {}) || {}
   }));
 
   return (

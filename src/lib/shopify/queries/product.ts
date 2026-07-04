@@ -7,6 +7,7 @@ export const getProductsQuery = `
           title
           handle
           vendor
+          availableForSale
           priceRange {
             minVariantPrice {
               amount
@@ -18,6 +19,14 @@ export const getProductsQuery = `
               node {
                 url
                 altText
+              }
+            }
+          }
+          variants(first: 50) {
+            edges {
+              node {
+                title
+                availableForSale
               }
             }
           }
