@@ -1,7 +1,8 @@
 import FilterSidebar from '@/components/FilterSidebar';
 import LoadMoreProducts from '@/components/LoadMoreProducts';
 import ProductSort from '@/components/ProductSort';
-import prisma from '@/lib/prisma';
+import { shopifyFetch } from '@/lib/shopify';
+import { getProductsQuery } from '@/lib/shopify/queries/product';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
@@ -61,92 +62,27 @@ export default async function ProductsPage({
   const subCategoryFilter = typeof params.subcategory === 'string' ? params.subcategory : undefined;
   const inStockFilter = params.instock === '1';
 
-  let orderBy: any = { createdAt: 'desc' };
-  if (sort === 'price_asc') orderBy = { price: 'asc' };
-  if (sort === 'price_desc') orderBy = { price: 'desc' };
-
-  const where: any = {};
-  
-  if (category && category.toLowerCase() !== 'sale') {
-    const categories = category.split(',').map(c => c.trim());
-    where.category = { in: categories, mode: 'insensitive' };
-  }
-  
-  if (brand) {
-    const brands = brand.split(',').map(b => b.trim());
-    where.brand = { in: brands, mode: 'insensitive' };
-  }
-
-  // Price range filter
-  if (priceFilter) {
-    const [minStr, maxStr] = priceFilter.split('-');
-    const min = parseFloat(minStr);
-    const max = parseFloat(maxStr);
-    if (!isNaN(min) && !isNaN(max)) {
-      where.price = { gte: min, lte: max };
+  // Fetch products from Shopify
+  const { body: productsData } = await shopifyFetch<any>({
+    query: getProductsQuery,
+    variables: { 
+      first: PAGE_SIZE,
+      query: brand ? `vendor:${brand}` : '' // Simplistic mapping for now
     }
-  }
+  });
 
-  // Sub-category filter (name-based keyword search)
-  if (subCategoryFilter) {
-    const subCats = subCategoryFilter.split(',').map(s => s.trim());
-    const nameKeywords: string[] = [];
-    subCats.forEach(sub => {
-      const keywords = SUB_CATEGORY_KEYWORDS[sub];
-      if (keywords) {
-        nameKeywords.push(...keywords);
-      }
-    });
-    if (nameKeywords.length > 0) {
-      where.OR = nameKeywords.map(kw => ({
-        name: { contains: kw, mode: 'insensitive' },
-      }));
-    }
-  }
+  const productNodes = productsData?.data?.products?.edges?.map((e: any) => e.node) || [];
+  let products = productNodes.map((node: any) => ({
+    id: node.id,
+    name: node.title,
+    brand: node.vendor,
+    price: parseFloat(node.priceRange.minVariantPrice.amount),
+    imageUrl: node.images?.edges?.[0]?.node?.url || '',
+    sizes: {} // Sizes can be mapped from variants if needed
+  }));
 
-  // Fetch more products than needed so we can filter by size/stock client-side-ish
-  // We overfetch for size/stock filtering since Prisma can't filter on JSON keys directly
-  const needsPostFilter = !!sizeFilter || inStockFilter;
-  const fetchLimit = needsPostFilter ? PAGE_SIZE * 10 : PAGE_SIZE;
-
-  let [products, totalCountRaw] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy,
-      take: fetchLimit,
-    }),
-    prisma.product.count({ where }),
-  ]);
-
-  // Post-filter: Size filter (check JSON keys)
-  if (sizeFilter) {
-    const requestedSizes = sizeFilter.split(',').map(s => s.trim());
-    products = products.filter(p => {
-      const sizes = p.sizes as Record<string, any> | null;
-      if (!sizes) return false;
-      return requestedSizes.some(rs => {
-        const val = sizes[rs];
-        if (val === undefined) return false;
-        if (typeof val === 'object') return val.stock > 0;
-        return (val as number) > 0;
-      });
-    });
-  }
-
-  // Post-filter: In-stock filter
-  if (inStockFilter) {
-    products = products.filter(p => {
-      const sizes = p.sizes as Record<string, any> | null;
-      if (!sizes) return false;
-      return Object.values(sizes).some(val => {
-        if (typeof val === 'object') return val.stock > 0;
-        return (val as number) > 0;
-      });
-    });
-  }
-
-  const totalCount = needsPostFilter ? products.length : totalCountRaw;
-  const paginatedProducts = products.slice(0, PAGE_SIZE);
+  const totalCount = products.length;
+  const paginatedProducts = products;
 
   // Build query params string for client-side load more
   const qp = new URLSearchParams();

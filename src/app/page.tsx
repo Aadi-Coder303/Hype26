@@ -4,25 +4,40 @@ import BrandTicker from '@/components/BrandTicker';
 import HeatCarousel from '@/components/HeatCarousel';
 import LookbookGrid from '@/components/LookbookGrid';
 import ScrollReveal from '@/components/ScrollReveal';
-import prisma from '@/lib/prisma';
+import { shopifyFetch } from '@/lib/shopify';
+import { getProductsQuery } from '@/lib/shopify/queries/product';
 
 export const revalidate = 60;
 
 export default async function Home() {
-  // Fetch high heat / premium items for Top Picks
-  const topPicks = await prisma.product.findMany({
-    take: 8,
-    where: { imageUrl: { not: null } },
-    orderBy: { price: 'desc' },
+  // Fetch items for Top Picks via Shopify
+  const { body: topPicksData } = await shopifyFetch<any>({
+    query: getProductsQuery,
+    variables: { first: 8 }
   });
+  const topPicksNodes = topPicksData?.data?.products?.edges?.map((e: any) => e.node) || [];
+  const topPicks = topPicksNodes.map((node: any) => ({
+    id: node.id,
+    name: node.title,
+    brand: node.vendor,
+    price: parseFloat(node.priceRange.minVariantPrice.amount),
+    imageUrl: node.images?.edges?.[0]?.node?.url || '',
+    sizes: {} 
+  }));
 
-  // Fetch random products for lookbook (grab more and let the client shuffle)
-  const lookbookProducts = await prisma.product.findMany({
-    take: 12,
-    where: { imageUrl: { not: null } },
-    orderBy: { updatedAt: 'desc' },
-    select: { id: true, name: true, brand: true, price: true, imageUrl: true },
+  // Fetch products for lookbook
+  const { body: lookbookData } = await shopifyFetch<any>({
+    query: getProductsQuery,
+    variables: { first: 12 }
   });
+  const lookbookNodes = lookbookData?.data?.products?.edges?.map((e: any) => e.node) || [];
+  const lookbookProducts = lookbookNodes.map((node: any) => ({
+    id: node.id,
+    name: node.title,
+    brand: node.vendor,
+    price: parseFloat(node.priceRange.minVariantPrice.amount),
+    imageUrl: node.images?.edges?.[0]?.node?.url || ''
+  }));
 
   return (
     <main className="flex min-h-screen flex-col bg-white dark:bg-neutral-950">

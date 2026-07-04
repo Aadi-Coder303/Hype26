@@ -1,38 +1,45 @@
 import { MetadataRoute } from 'next';
-import prisma from '@/lib/prisma';
+import { shopifyFetch } from '@/lib/shopify';
+import { getProductsQuery } from '@/lib/shopify/queries/product';
+
+const BASE_URL = 'https://hype26.com';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://solevault.com';
-
-  // Fetch all product IDs
-  const products = await prisma.product.findMany({
-    select: { id: true, updatedAt: true },
-  });
-
-  const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${baseUrl}/products/${product.id}`,
-    lastModified: product.updatedAt,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
-
-  const staticPages = [
+  const routes = [
     '',
     '/products',
-    '/authenticity',
+    '/cart',
+    '/search',
     '/faq',
-    '/shipping',
     '/contact',
-    '/privacy',
+    '/shipping',
     '/terms',
-  ];
-
-  const staticEntries: MetadataRoute.Sitemap = staticPages.map((page) => ({
-    url: `${baseUrl}${page}`,
+    '/privacy',
+  ].map((route) => ({
+    url: `${BASE_URL}${route}`,
     lastModified: new Date(),
-    changeFrequency: 'daily',
-    priority: page === '' ? 1.0 : 0.8,
+    changeFrequency: 'daily' as const,
+    priority: route === '' ? 1 : 0.8,
   }));
 
-  return [...staticEntries, ...productEntries];
+  try {
+    const { body } = await shopifyFetch<any>({
+      query: getProductsQuery,
+      variables: { first: 100 }
+    });
+
+    const productNodes = body?.data?.products?.edges?.map((e: any) => e.node) || [];
+
+    const productRoutes = productNodes.map((product: any) => ({
+      url: `${BASE_URL}/products/${product.handle}`,
+      lastModified: new Date(product.updatedAt || new Date()),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
+
+    return [...routes, ...productRoutes];
+  } catch (error) {
+    console.error('Error fetching products for sitemap:', error);
+    return routes; // Return basic routes if Shopify fails
+  }
 }

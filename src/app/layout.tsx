@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import BuyerShell from "@/components/BuyerShell";
-import AuthSync from "@/components/AuthSync";
 import VisitorTracker from "@/components/VisitorTracker";
 import ThemeProvider from "@/components/ThemeProvider";
 import { Toaster } from "react-hot-toast";
@@ -74,7 +73,6 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen flex flex-col antialiased text-black bg-white dark:text-neutral-100 dark:bg-neutral-950 transition-colors duration-300`}>
         <ThemeProvider>
           <Navbar />
-          <AuthSync />
           <VisitorTracker />
           <BuyerShell>
             <div className="flex-1">

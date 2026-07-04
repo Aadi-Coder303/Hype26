@@ -5,8 +5,6 @@ import Image from 'next/image';
 import { Search, Heart, ShoppingBag, Menu, User, LogOut, X, Package, LayoutDashboard, Moon, Sun, Loader2 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { OWNER_EMAILS } from '@/lib/constants';
 import { useTheme } from '@/components/ThemeProvider';
@@ -20,7 +18,7 @@ interface Suggestion {
 }
 
 export default function Navbar() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const cartItems = useCartStore(state => state.items);
   const cartCount = cartItems.reduce((t, i) => t + i.quantity, 0);
   const [mounted, setMounted] = useState(false);
@@ -29,7 +27,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
   const { theme, toggleTheme } = useTheme();
 
   // Suggestion state
@@ -40,26 +37,18 @@ export default function Navbar() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  const isOwner = mounted && user?.email && OWNER_EMAILS.includes(user.email);
-
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    // Auth checks will be re-implemented later with Shopify
+    setIsAdmin(false);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -101,10 +90,9 @@ export default function Navbar() {
     debounceRef.current = setTimeout(() => fetchSuggestions(val), 250);
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setMobileMenuOpen(false);
+  const handleLogout = async () => {
+    // Auth logout will be handled via Shopify Customer API
+    setIsAdmin(false);
     router.push('/');
   };
 
@@ -245,7 +233,7 @@ export default function Navbar() {
   };
 
   // ── Owner: minimal navbar ──
-  if (isOwner) {
+  if (isAdmin) {
     return (
       <header className="sticky top-0 z-50 w-full bg-neutral-950 text-white border-b border-neutral-800">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">
@@ -256,7 +244,7 @@ export default function Navbar() {
             <Link href="/dashboard" className="text-xs font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors flex items-center gap-1.5">
               <LayoutDashboard size={14} /> Dashboard
             </Link>
-            <button onClick={handleSignOut} className="text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-[#E63946] transition-colors flex items-center gap-1.5">
+            <button onClick={handleLogout} className="text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-[#E63946] transition-colors flex items-center gap-1.5">
               <LogOut size={14} /> Sign Out
             </button>
           </div>
