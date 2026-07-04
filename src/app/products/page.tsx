@@ -125,7 +125,7 @@ export default async function ProductsPage({
         
         <LoadMoreProducts 
           key={qp.toString()}
-          initialProducts={paginatedProducts.map(p => ({ ...p, imageUrl: p.imageUrl, sizes: p.sizes as Record<string, number | { stock: number; price: number }> }))} 
+          initialProducts={paginatedProducts.map((p: any) => ({ ...p, imageUrl: p.imageUrl, sizes: p.sizes as Record<string, number | { stock: number; price: number }> }))} 
           totalCount={totalCount}
           pageSize={PAGE_SIZE}
           queryParams={qp.toString()}

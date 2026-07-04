@@ -35,10 +35,17 @@ export async function shopifyFetch<T>({
       ...(tags && { next: { tags } })
     });
 
-    const body = await result.json();
+    let body;
+    try {
+      body = await result.json();
+    } catch (err) {
+      console.warn('Failed to parse Shopify response as JSON');
+      return { status: result.status, body: {} as T };
+    }
 
     if (body.errors) {
-      throw body.errors[0];
+      console.warn('Shopify GraphQL errors', body.errors);
+      return { status: result.status, body: {} as T };
     }
 
     return {

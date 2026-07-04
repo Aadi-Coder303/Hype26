@@ -73,7 +73,7 @@ export default async function Home() {
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-normal tracking-tight text-neutral-900 dark:text-neutral-100">The Lookbook</h2>
             </div>
             
-            <LookbookGrid products={lookbookProducts.map(p => ({ ...p, imageUrl: p.imageUrl || '' }))} />
+            <LookbookGrid products={lookbookProducts.map((p: any) => ({ ...p, imageUrl: p.imageUrl || '' }))} />
           </div>
         </ScrollReveal>
       </section>
@@ -96,7 +96,7 @@ export default async function Home() {
           </div>
 
           {topPicks.length > 0 ? (
-            <HeatCarousel products={topPicks.map(p => ({ ...p, imageUrl: p.imageUrl, sizes: p.sizes as Record<string, number | { stock: number; price: number }> }))} />
+            <HeatCarousel products={topPicks.map((p: any) => ({ ...p, imageUrl: p.imageUrl, sizes: p.sizes as Record<string, number | { stock: number; price: number }> }))} />
           ) : (
             <div className="w-full py-16 text-center text-neutral-400 text-sm uppercase tracking-widest">
               No products yet. Import some from the owner dashboard!

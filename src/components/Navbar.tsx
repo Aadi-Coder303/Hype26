@@ -19,6 +19,7 @@ interface Suggestion {
 
 export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const cartItems = useCartStore(state => state.items);
   const cartCount = cartItems.reduce((t, i) => t + i.quantity, 0);
   const [mounted, setMounted] = useState(false);
@@ -93,6 +94,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     // Auth logout will be handled via Shopify Customer API
     setIsAdmin(false);
+    setIsLoggedIn(false);
     router.push('/');
   };
 
@@ -365,17 +367,17 @@ export default function Navbar() {
           </Link>
           {/* Desktop auth */}
           <div className="hidden md:block">
-            {mounted && !user && (
+            {mounted && !isLoggedIn && (
               <Link href="/login" className="text-sm font-bold uppercase tracking-wide hover:text-[#E63946]">
                 Log In
               </Link>
             )}
-            {mounted && user && (
+            {mounted && isLoggedIn && (
               <div className="flex items-center gap-4">
                 <Link href="/orders" className="hover:text-[#E63946] transition-colors" aria-label="My Orders">
                   <Package size={20} />
                 </Link>
-                <button onClick={handleSignOut} className="hover:text-[#E63946] transition-colors" aria-label="Sign Out">
+                <button onClick={handleLogout} className="hover:text-[#E63946] transition-colors" aria-label="Sign Out">
                   <LogOut size={20} />
                 </button>
               </div>
@@ -406,7 +408,7 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              {mounted && user && (
+              {mounted && isLoggedIn && (
                 <Link href="/orders" onClick={() => setMobileMenuOpen(false)} className="py-3 px-2 text-sm uppercase tracking-[0.08em] font-medium text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all flex items-center gap-2">
                   <Package size={16} /> My Orders
                 </Link>
@@ -421,13 +423,13 @@ export default function Navbar() {
                 {mounted && theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
                 {mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
               </button>
-              {mounted && !user && (
+              {mounted && !isLoggedIn && (
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="py-3 px-2 text-sm uppercase tracking-[0.08em] font-medium text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all flex items-center gap-2">
                   <User size={16} /> Log In
                 </Link>
               )}
-              {mounted && user && (
-                <button onClick={handleSignOut} className="w-full py-3 px-2 text-sm uppercase tracking-[0.08em] font-medium text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all flex items-center gap-2">
+              {mounted && isLoggedIn && (
+                <button onClick={handleLogout} className="w-full py-3 px-2 text-sm uppercase tracking-[0.08em] font-medium text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all flex items-center gap-2">
                   <LogOut size={16} /> Sign Out
                 </button>
               )}

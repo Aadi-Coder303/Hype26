@@ -10,13 +10,11 @@ export default function BuyerShell({ children }: { children: React.ReactNode }) 
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-      setIsOwner(!!(session?.user?.email && OWNER_EMAILS.includes(session.user.email)));
-    });
+    // Auth checks will be re-implemented later with Shopify
+    setIsAdmin(false);
+  }, []);
 
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
-
-  if (isOwner) {
+  if (isAdmin) {
     // Owner: no announcement bar, no footer, no WhatsApp button
     return <>{children}</>;
   }
