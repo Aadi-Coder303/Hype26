@@ -62,17 +62,21 @@ export const metadata: Metadata = {
 
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { getSession } from "@/app/actions/auth";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+  const isLoggedIn = !!session;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen flex flex-col antialiased text-black bg-white dark:text-neutral-100 dark:bg-neutral-950 transition-colors duration-300`}>
         <ThemeProvider>
-          <Navbar />
+          <Navbar initialIsLoggedIn={isLoggedIn} />
           <VisitorTracker />
           <BuyerShell>
             <div className="flex-1">

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { OWNER_EMAILS } from '@/lib/constants';
 import { useTheme } from '@/components/ThemeProvider';
+import { logoutUser } from '@/app/actions/auth';
 
 interface Suggestion {
   id: string;
@@ -17,9 +18,9 @@ interface Suggestion {
   image: string | null;
 }
 
-export default function Navbar() {
+export default function Navbar({ initialIsLoggedIn = false }: { initialIsLoggedIn?: boolean }) {
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(initialIsLoggedIn);
   const cartItems = useCartStore(state => state.items);
   const cartCount = cartItems.reduce((t, i) => t + i.quantity, 0);
   const [mounted, setMounted] = useState(false);
@@ -92,10 +93,11 @@ export default function Navbar() {
   };
 
   const handleLogout = async () => {
-    // Auth logout will be handled via Shopify Customer API
-    setIsAdmin(false);
+    await logoutUser();
     setIsLoggedIn(false);
+    setIsAdmin(false);
     router.push('/');
+    router.refresh();
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -233,6 +235,11 @@ export default function Navbar() {
       </>
     );
   };
+
+  // Update state if prop changes (e.g. router.refresh)
+  useEffect(() => {
+    setIsLoggedIn(initialIsLoggedIn);
+  }, [initialIsLoggedIn]);
 
   // ── Owner: minimal navbar ──
   if (isAdmin) {
