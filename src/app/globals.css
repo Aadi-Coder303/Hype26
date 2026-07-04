@@ -1,0 +1,228 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FCFCFA; /* Soft Alabaster */
+  --foreground: #1A1A1A; /* Deep Charcoal */
+  --accent: #2C2C2C; /* Classy Obsidian */
+  --accent-glow: rgba(44, 44, 44, 0.08);
+}
+
+.dark {
+  --background: #0D0D0D; /* Rich Black */
+  --foreground: #F0F0F0; /* Soft Ivory */
+  --accent: #E5E5E5; /* Light Platinum */
+  --accent-glow: rgba(229, 229, 229, 0.1);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #404040;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+/* Page transition wrapper */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Animate on scroll — uses intersection observer in JS */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Stagger children animation delays */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+  .stagger-6 { animation-delay: 300ms; }
+  .stagger-7 { animation-delay: 350ms; }
+  .stagger-8 { animation-delay: 400ms; }
+  .stagger-9 { animation-delay: 450ms; }
+  .stagger-10 { animation-delay: 500ms; }
+
+  /* Underline grow animation for links */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+  .link-underline:hover::after {
+    width: 100%;
+  }
+
+  /* Button press effect */
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(90deg, #f5f5f5 25%, #e5e5e5 50%, #f5f5f5 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  .dark .shimmer {
+    background: linear-gradient(90deg, #1a1a1a 25%, #262626 50%, #1a1a1a 75%);
+    background-size: 200% 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Smooth image load */
+img {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+img[src=""] {
+  opacity: 0;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Input focus transition */
+input:focus, textarea:focus {
+  transition: border-color 0.2s ease;
+}
+
+/* Dark mode transition */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── Dual-handle price range slider ── */
+.price-range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+.price-range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #E63946;
+  border: 3px solid white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.price-range-thumb::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 6px rgba(230, 57, 70, 0.15), 0 1px 6px rgba(0,0,0,0.18);
+}
+.price-range-thumb::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+}
+.dark .price-range-thumb::-webkit-slider-thumb {
+  border-color: #1a1a1a;
+}
+
+/* Firefox */
+.price-range-thumb::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #E63946;
+  border: 3px solid white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.18);
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+}
+.price-range-thumb::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 6px rgba(230, 57, 70, 0.15), 0 1px 6px rgba(0,0,0,0.18);
+}
+.dark .price-range-thumb::-moz-range-thumb {
+  border-color: #1a1a1a;
+}
+.price-range-thumb::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+/* Remove default focus outline on range (we have custom glow) */
+.price-range-thumb:focus {
+  outline: none;
+}
