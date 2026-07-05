@@ -1,6 +1,6 @@
 export const getProductsQuery = `
-  query getProducts($first: Int!, $query: String) {
-    products(first: $first, query: $query) {
+  query getProducts($first: Int!, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) {
+    products(first: $first, query: $query, sortKey: $sortKey, reverse: $reverse) {
       edges {
         node {
           id

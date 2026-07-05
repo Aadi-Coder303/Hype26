@@ -67,7 +67,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     imageUrl: rawProduct.images?.edges?.map((e: any) => e.node.url).join(',') || '',
     description: rawProduct.descriptionHtml,
     sizes: rawProduct.variants?.edges?.reduce((acc: any, edge: any) => {
-      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      acc[edge.node.title] = {
+        stock: edge.node.availableForSale ? 10 : 0,
+        price: parseFloat(edge.node.price.amount),
+        variantId: edge.node.id,
+      };
       return acc;
     }, {}) || {}
   };

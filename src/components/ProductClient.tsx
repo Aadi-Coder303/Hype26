@@ -93,9 +93,11 @@ export default function ProductClient({ product, colorVariants = [] }: { product
   const handleAddToCart = () => {
     if (!selectedSize) return toast.error('Please select a size first.');
     const price = getCurrentPrice();
+    const variantId = (sizesMap[selectedSize] as any)?.variantId || '';
     addItem({
       id: `${product.id}-${selectedSize}`,
       productId: product.id,
+      variantId,
       name: product.name,
       price,
       size: selectedSize,
@@ -107,15 +109,17 @@ export default function ProductClient({ product, colorVariants = [] }: { product
   const handleBuyNow = () => {
     if (!selectedSize) return toast.error('Please select a size first.');
     const price = getCurrentPrice();
+    const variantId = (sizesMap[selectedSize] as any)?.variantId || '';
     addItem({
       id: `${product.id}-${selectedSize}`,
       productId: product.id,
+      variantId,
       name: product.name,
       price,
       size: selectedSize,
       imageUrl: product.imageUrl || '',
     });
-    router.push('/checkout');
+    router.push('/cart');
   };
 
   return (

@@ -4,11 +4,15 @@ import Link from 'next/link';
 import { useCartStore } from '@/store/useCartStore';
 import { formatCurrency } from '@/lib/formatCurrency';
 import { useEffect, useState } from 'react';
+import { createCheckout } from '@/app/actions/checkout';
+import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, getTotalPrice } = useCartStore();
   const [mounted, setMounted] = useState(false);
   const [emptyText, setEmptyText] = useState("");
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -22,6 +26,30 @@ export default function CartPage() {
     ];
     setEmptyText(quotes[Math.floor(Math.random() * quotes.length)]);
   }, []);
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      const { checkoutUrl, error } = await createCheckout(
+        items.map(item => ({
+          variantId: item.variantId,
+          quantity: item.quantity
+        }))
+      );
+
+      if (error || !checkoutUrl) {
+        toast.error(error || 'Failed to initialize checkout.');
+        setIsCheckingOut(false);
+        return;
+      }
+
+      // Redirect to secure Shopify checkout
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      toast.error('An unexpected error occurred.');
+      setIsCheckingOut(false);
+    }
+  };
 
   if (!mounted) return null; // Avoid hydration mismatch
 
@@ -43,13 +71,13 @@ export default function CartPage() {
             {items.map(item => (
               <div key={item.id} className="flex gap-4 border-b border-neutral-200 dark:border-neutral-800 pb-6">
                 {/* Clickable product image */}
-                <Link href={`/products/${item.productId}`} className="w-24 h-24 bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 overflow-hidden rounded-sm ring-1 ring-transparent hover:ring-neutral-300 dark:hover:ring-neutral-600 transition-all">
+                <Link href={`/product/${item.productId}`} className="w-24 h-24 bg-neutral-100 dark:bg-neutral-800 flex-shrink-0 overflow-hidden rounded-sm ring-1 ring-transparent hover:ring-neutral-300 dark:hover:ring-neutral-600 transition-all">
                   {item.imageUrl && <img src={item.imageUrl.split(',')[0].trim()} alt={item.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                 </Link>
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     {/* Clickable product name */}
-                    <Link href={`/products/${item.productId}`} className="font-bold hover:text-neutral-500 transition-colors hover:underline underline-offset-2">{item.name}</Link>
+                    <Link href={`/product/${item.productId}`} className="font-bold hover:text-neutral-500 transition-colors hover:underline underline-offset-2">{item.name}</Link>
                     <p className="text-sm text-neutral-500">Size: {item.size}</p>
                   </div>
                   <div className="flex justify-between items-center mt-2">
@@ -57,17 +85,20 @@ export default function CartPage() {
                     <div className="flex items-center gap-4">
                       <div className="flex border border-neutral-200 dark:border-neutral-700">
                         <button 
-                          className="px-3 py-1 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          className="px-3 py-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50"
+                          disabled={isCheckingOut}
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         >-</button>
                         <span className="px-3 py-1 border-x border-neutral-200 dark:border-neutral-700">{item.quantity}</span>
                         <button 
-                          className="px-3 py-1 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                          className="px-3 py-1 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50"
+                          disabled={isCheckingOut}
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         >+</button>
                       </div>
                       <button 
-                        className="text-sm underline text-neutral-500 hover:text-black dark:hover:text-white"
+                        className="text-sm underline text-neutral-500 hover:text-black dark:hover:text-white disabled:opacity-50"
+                        disabled={isCheckingOut}
                         onClick={() => removeItem(item.id)}
                       >
                         Remove
@@ -97,9 +128,14 @@ export default function CartPage() {
                 <span className="font-bold uppercase tracking-wide">Total</span>
                 <span className="text-xl font-bold">{formatCurrency(getTotalPrice())}</span>
               </div>
-              <Link href="/checkout" className="block text-center w-full bg-[#E63946] text-white py-4 font-bold uppercase tracking-wider hover:bg-black transition-colors">
-                Checkout
-              </Link>
+              <button 
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+                className="w-full bg-[#E63946] text-white py-4 font-bold uppercase tracking-wider hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+              >
+                {isCheckingOut ? <Loader2 size={18} className="animate-spin" /> : null}
+                {isCheckingOut ? 'Processing...' : 'Checkout'}
+              </button>
             </div>
           </div>
         </div>

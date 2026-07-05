@@ -62,12 +62,41 @@ export default async function ProductsPage({
   const subCategoryFilter = typeof params.subcategory === 'string' ? params.subcategory : undefined;
   const inStockFilter = params.instock === '1';
 
+  const queryParts = [];
+  if (brand) queryParts.push(`vendor:${brand}`);
+  if (category && category !== 'sale') queryParts.push(`title:*${category}*`);
+  if (inStockFilter) queryParts.push(`available_for_sale:true`);
+  if (priceFilter) {
+    const [min, max] = priceFilter.split('-');
+    if (min && max) {
+      queryParts.push(`variants.price:>=${min} AND variants.price:<=${max}`);
+    } else if (min) {
+      queryParts.push(`variants.price:>=${min}`);
+    }
+  }
+  const shopifyQuery = queryParts.join(' AND ');
+
+  let sortKey = 'RELEVANCE';
+  let reverse = false;
+  if (sort === 'price-asc') {
+    sortKey = 'PRICE';
+    reverse = false;
+  } else if (sort === 'price-desc') {
+    sortKey = 'PRICE';
+    reverse = true;
+  } else if (sort === 'newest') {
+    sortKey = 'CREATED_AT';
+    reverse = true;
+  }
+
   // Fetch products from Shopify
   const { body: productsData } = await shopifyFetch<any>({
     query: getProductsQuery,
     variables: { 
       first: PAGE_SIZE,
-      query: brand ? `vendor:${brand}` : '' // Simplistic mapping for now
+      query: shopifyQuery,
+      sortKey,
+      reverse
     }
   });
 
@@ -79,7 +108,11 @@ export default async function ProductsPage({
     price: parseFloat(node.priceRange.minVariantPrice.amount),
     imageUrl: node.images?.edges?.[0]?.node?.url || '',
     sizes: node.variants?.edges?.reduce((acc: any, edge: any) => {
-      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      acc[edge.node.title] = {
+        stock: edge.node.availableForSale ? 10 : 0,
+        price: parseFloat(edge.node.price.amount),
+        variantId: edge.node.id,
+      };
       return acc;
     }, {}) || {}
   }));

@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 export interface CartItem {
   id: string; // usually product_id + size
   productId: string;
+  variantId: string; // Shopify variant GraphQL ID for checkout
   name: string;
   price: number;
   size: string;
