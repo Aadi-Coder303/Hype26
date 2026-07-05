@@ -71,9 +71,11 @@ export default function ProductCard({ id, name, price, originalPrice, imageUrl, 
     e.stopPropagation();
     const sizeVal = sizes?.[size];
     const sizePrice = sizeVal && typeof sizeVal === 'object' ? sizeVal.price : price;
+    const variantId = sizeVal && typeof sizeVal === 'object' && 'variantId' in sizeVal ? (sizeVal as any).variantId : '';
     addItem({
       id: `${id}-${size}`,
       productId: id,
+      variantId,
       name,
       price: sizePrice,
       size,
