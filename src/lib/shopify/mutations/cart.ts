@@ -1,6 +1,10 @@
 export const createCartMutation = `
   mutation createCart($lineItems: [CartLineInput!]) {
     cartCreate(input: { lines: $lineItems }) {
+      userErrors {
+        field
+        message
+      }
       cart {
         id
         checkoutUrl
