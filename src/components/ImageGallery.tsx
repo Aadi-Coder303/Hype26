@@ -22,7 +22,7 @@ export default function ImageGallery({ images, altText }: ImageGalleryProps) {
     <div className="flex flex-col gap-4 w-full">
       {/* Main Image */}
       <div className="relative aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 w-full overflow-hidden flex items-center justify-center group">
-        {displayImages[activeIndex] ? (
+        {displayImages[activeIndex] && displayImages[activeIndex].startsWith('http') ? (
           <img 
             src={displayImages[activeIndex]} 
             alt={`${altText} - View ${activeIndex + 1}`} 
@@ -33,7 +33,7 @@ export default function ImageGallery({ images, altText }: ImageGalleryProps) {
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
-          <span className="text-neutral-400 text-sm uppercase tracking-wider">Main Product Image</span>
+          <span className="text-neutral-400 text-sm uppercase tracking-wider">Coming Soon</span>
         )}
 
         {/* Removed image counter since we only display the first image */}

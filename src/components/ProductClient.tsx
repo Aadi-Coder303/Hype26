@@ -167,7 +167,9 @@ export default function ProductClient({ product, colorVariants = [] }: { product
                       isActive ? 'bg-black text-white dark:bg-white dark:text-black shadow-md' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
                     }`}
                   >
-                    {thumb && <img src={thumb} alt={v.colorName || v.name} className="w-6 h-6 object-cover rounded-full" />}
+                    {thumb && v.imageUrl && v.imageUrl.startsWith('http') ? (
+                      <img src={thumb} alt={v.colorName || v.name} className="w-6 h-6 object-cover rounded-full" />
+                    ) : null}
                     <span className="tracking-wide">{v.colorName || 'Default'}</span>
                   </button>
                 );

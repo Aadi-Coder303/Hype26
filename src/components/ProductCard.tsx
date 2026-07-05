@@ -127,7 +127,7 @@ export default function ProductCard({ id, name, price, originalPrice, imageUrl, 
         {/* Image Area */}
         <Link href={productHref} className="block relative aspect-[4/5] bg-neutral-100/50 dark:bg-neutral-800/30 overflow-hidden rounded-2xl sm:rounded-3xl shadow-sm group-hover:shadow-xl dark:group-hover:shadow-neutral-900/50 transition-shadow duration-500">
           <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
-            {imageUrl ? (
+            {imageUrl && imageUrl.startsWith('http') ? (
               <>
                 {!imgLoaded && <div className="absolute inset-0 shimmer" />}
                 <img 
@@ -150,7 +150,7 @@ export default function ProductCard({ id, name, price, originalPrice, imageUrl, 
                 </div>
               </>
             ) : (
-              <span className="text-xs uppercase tracking-wider">No Image</span>
+              <span className="text-xs uppercase tracking-wider text-neutral-500">Coming Soon</span>
             )}
           </div>
           
