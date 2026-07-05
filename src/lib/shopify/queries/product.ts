@@ -25,8 +25,13 @@ export const getProductsQuery = `
           variants(first: 50) {
             edges {
               node {
+                id
                 title
                 availableForSale
+                price {
+                  amount
+                  currencyCode
+                }
               }
             }
           }

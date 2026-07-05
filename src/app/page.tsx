@@ -23,7 +23,11 @@ export default async function Home() {
     price: parseFloat(node.priceRange.minVariantPrice.amount),
     imageUrl: node.images?.edges?.[0]?.node?.url || '',
     sizes: node.variants?.edges?.reduce((acc: any, edge: any) => {
-      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      acc[edge.node.title] = {
+        stock: edge.node.availableForSale ? 10 : 0,
+        price: parseFloat(edge.node.price.amount),
+        variantId: edge.node.id,
+      };
       return acc;
     }, {}) || {}
   }));
@@ -41,7 +45,11 @@ export default async function Home() {
     price: parseFloat(node.priceRange.minVariantPrice.amount),
     imageUrl: node.images?.edges?.[0]?.node?.url || '',
     sizes: node.variants?.edges?.reduce((acc: any, edge: any) => {
-      acc[edge.node.title] = edge.node.availableForSale ? 10 : 0;
+      acc[edge.node.title] = {
+        stock: edge.node.availableForSale ? 10 : 0,
+        price: parseFloat(edge.node.price.amount),
+        variantId: edge.node.id,
+      };
       return acc;
     }, {}) || {}
   }));
